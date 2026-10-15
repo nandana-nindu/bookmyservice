@@ -41,6 +41,21 @@ class Command(BaseCommand):
             CustomerProfile.objects.create(user=customer_user, address='MG Road, Flat 4B', city='Kochi')
             self.stdout.write(self.style.SUCCESS("Created Customer: customer@bookmyservice.com (password: customer123)"))
 
+        # 2b. Create Nandana's Account
+        nandana_user, created = User.objects.get_or_create(
+            email='nandana@bookmyservice.com',
+            defaults={
+                'name': 'Nandana',
+                'phone': '+919876543290',
+                'role': User.Role.CUSTOMER
+            }
+        )
+        if created or not nandana_user.check_password('nandana123'):
+            nandana_user.set_password('nandana123')
+            nandana_user.save()
+            CustomerProfile.objects.get_or_create(user=nandana_user, defaults={'address': 'Marine Drive, Kochi', 'city': 'Kochi'})
+            self.stdout.write(self.style.SUCCESS("Created Customer: nandana@bookmyservice.com (password: nandana123)"))
+
         # 3. Create Categories
         categories_data = [
             {'name': 'Laptop Repair', 'slug': 'laptop-repair', 'icon': 'bi-laptop', 'description': 'Hardware fixes, OS installation, motherboard and screen repairs.'},

@@ -87,6 +87,13 @@ export default function HomePage() {
               </p>
               <div className="d-grid gap-2">
                 <button
+                  className="btn btn-primary btn-sm text-start py-2 px-3 rounded-3 shadow-sm"
+                  onClick={() => handleQuickLogin('nandana@bookmyservice.com', 'nandana123')}
+                >
+                  <i className="bi bi-person-heart text-white me-2"></i>
+                  <strong>Nandana:</strong> Marine Drive, Kochi (Customer)
+                </button>
+                <button
                   className="btn btn-outline-light btn-sm text-start py-2 px-3 rounded-3"
                   onClick={() => handleQuickLogin('customer@bookmyservice.com', 'customer123')}
                 >

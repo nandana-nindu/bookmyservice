@@ -304,6 +304,13 @@ export default function AuthPage({ isRegisterDefault = false }) {
               <div className="d-flex justify-content-center gap-2 flex-wrap">
                 <button
                   type="button"
+                  className="btn btn-primary btn-sm rounded-pill fw-semibold"
+                  onClick={() => handleQuickLogin('nandana@bookmyservice.com', 'nandana123')}
+                >
+                  <i className="bi bi-person-heart me-1"></i> Nandana
+                </button>
+                <button
+                  type="button"
                   className="btn btn-outline-secondary btn-sm rounded-pill"
                   onClick={() => handleQuickLogin('customer@bookmyservice.com', 'customer123')}
                 >

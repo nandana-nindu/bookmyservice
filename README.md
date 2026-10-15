@@ -108,6 +108,7 @@ For quick evaluation, pre-seeded accounts are available directly via the **Demo 
 | **Administrator** | `admin@bookmyservice.com` | `admin123` | Full dashboard metrics & account toggle |
 | **Service Provider** | `apex.tech@bookmyservice.com` | `provider123` | Apex Tech Repairs (Laptop Specialist) |
 | **Service Provider** | `coolbreeze@bookmyservice.com` | `provider123` | CoolBreeze AC Systems |
+| **Customer (Nandana)** | `nandana@bookmyservice.com` | `nandana123` | Nandana Nindu (Marine Drive, Kochi) |
 | **Customer** | `customer@bookmyservice.com` | `customer123` | Rahul Sharma (MG Road, Kochi) |
 
 ---

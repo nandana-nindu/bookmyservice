@@ -83,8 +83,13 @@ export default function Navbar() {
               <ul className="dropdown-menu dropdown-menu-end shadow">
                 <li><h6 className="dropdown-header">Switch Demo Role</h6></li>
                 <li>
+                  <button className="dropdown-item fw-bold text-primary" onClick={() => handleQuickLogin('nandana@bookmyservice.com', 'nandana123')}>
+                    <i className="bi bi-person-heart text-primary me-2"></i> Nandana (Customer)
+                  </button>
+                </li>
+                <li>
                   <button className="dropdown-item" onClick={() => handleQuickLogin('customer@bookmyservice.com', 'customer123')}>
-                    <i className="bi bi-person text-primary me-2"></i> Customer (Rahul Sharma)
+                    <i className="bi bi-person text-secondary me-2"></i> Customer (Rahul Sharma)
                   </button>
                 </li>
                 <li>
