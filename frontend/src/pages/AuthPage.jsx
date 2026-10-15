@@ -86,22 +86,6 @@ export default function AuthPage({ isRegisterDefault = false }) {
     }
   };
 
-  const handleQuickLogin = async (e, p) => {
-    setLoginEmail(e);
-    setLoginPassword(p);
-    setLoading(true);
-    try {
-      const loggedUser = await login(e, p);
-      if (loggedUser.role === 'ADMIN') navigate('/admin/dashboard');
-      else if (loggedUser.role === 'PROVIDER') navigate('/provider/dashboard');
-      else navigate('/customer/bookings');
-    } catch (err) {
-      setErrorMsg('Quick login failed. Ensure Django backend is running.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="container py-5">
       <div className="row justify-content-center">
@@ -297,41 +281,6 @@ export default function AuthPage({ isRegisterDefault = false }) {
                 </button>
               </form>
             )}
-
-            {/* Quick Demo Logins Box */}
-            <div className="mt-4 pt-3 border-top text-center">
-              <span className="small text-muted d-block mb-2">⚡ Quick 1-Click Assessment Logins:</span>
-              <div className="d-flex justify-content-center gap-2 flex-wrap">
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm rounded-pill fw-semibold"
-                  onClick={() => handleQuickLogin('nandana@bookmyservice.com', 'nandana123')}
-                >
-                  <i className="bi bi-person-heart me-1"></i> Nandana
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm rounded-pill"
-                  onClick={() => handleQuickLogin('customer@bookmyservice.com', 'customer123')}
-                >
-                  Customer
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-success btn-sm rounded-pill"
-                  onClick={() => handleQuickLogin('apex.tech@bookmyservice.com', 'provider123')}
-                >
-                  Provider
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-danger btn-sm rounded-pill"
-                  onClick={() => handleQuickLogin('admin@bookmyservice.com', 'admin123')}
-                >
-                  Admin
-                </button>
-              </div>
-            </div>
 
           </div>
         </div>

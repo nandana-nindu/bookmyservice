@@ -41,14 +41,6 @@ export default function HomePage() {
     }
   };
 
-  const handleQuickLogin = async (email, password) => {
-    try {
-      await login(email, password);
-    } catch (e) {
-      alert('Login failed. Please check backend connection.');
-    }
-  };
-
   return (
     <div className="container py-4">
       {/* Hero Section */}
@@ -81,39 +73,37 @@ export default function HomePage() {
 
           <div className="col-lg-5 d-none d-lg-block text-center">
             <div className="bg-white bg-opacity-10 p-4 rounded-4 backdrop-blur border border-white border-opacity-10 text-start">
-              <h5 className="text-white fw-bold mb-3">⚡ Quick Assessment Demo Logins</h5>
-              <p className="text-light small opacity-75 mb-3">
-                Click any role below to instantly log in and experience the respective capabilities:
-              </p>
-              <div className="d-grid gap-2">
-                <button
-                  className="btn btn-primary btn-sm text-start py-2 px-3 rounded-3 shadow-sm"
-                  onClick={() => handleQuickLogin('nandana@bookmyservice.com', 'nandana123')}
-                >
-                  <i className="bi bi-person-heart text-white me-2"></i>
-                  <strong>Nandana:</strong> Marine Drive, Kochi (Customer)
-                </button>
-                <button
-                  className="btn btn-outline-light btn-sm text-start py-2 px-3 rounded-3"
-                  onClick={() => handleQuickLogin('customer@bookmyservice.com', 'customer123')}
-                >
-                  <i className="bi bi-person-fill text-primary me-2"></i>
-                  <strong>Customer:</strong> Rahul Sharma (MG Road, Kochi)
-                </button>
-                <button
-                  className="btn btn-outline-light btn-sm text-start py-2 px-3 rounded-3"
-                  onClick={() => handleQuickLogin('apex.tech@bookmyservice.com', 'provider123')}
-                >
-                  <i className="bi bi-tools text-success me-2"></i>
-                  <strong>Provider:</strong> Apex Tech Repairs (Laptop Specialist)
-                </button>
-                <button
-                  className="btn btn-outline-light btn-sm text-start py-2 px-3 rounded-3"
-                  onClick={() => handleQuickLogin('admin@bookmyservice.com', 'admin123')}
-                >
-                  <i className="bi bi-shield-lock-fill text-danger me-2"></i>
-                  <strong>Admin:</strong> Platform Administrator Console
-                </button>
+              <h5 className="text-white fw-bold mb-3">🌟 Platform Guarantees</h5>
+              <div className="d-flex flex-column gap-3 text-light">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="stat-icon bg-primary bg-opacity-25 text-white" style={{ width: 44, height: 44 }}>
+                    <i className="bi bi-shield-lock-fill fs-5"></i>
+                  </div>
+                  <div>
+                    <strong className="d-block text-white">Double-Booking Shield</strong>
+                    <small className="opacity-75">Atomic database locks guarantee your reserved time slot.</small>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-3">
+                  <div className="stat-icon bg-success bg-opacity-25 text-white" style={{ width: 44, height: 44 }}>
+                    <i className="bi bi-clock-history fs-5"></i>
+                  </div>
+                  <div>
+                    <strong className="d-block text-white">2-Hour Flexible Policy</strong>
+                    <small className="opacity-75">Reschedule or cancel easily up to 2 hours before scheduled time.</small>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-3">
+                  <div className="stat-icon bg-warning bg-opacity-25 text-white" style={{ width: 44, height: 44 }}>
+                    <i className="bi bi-patch-check-fill fs-5"></i>
+                  </div>
+                  <div>
+                    <strong className="d-block text-white">100% Certified Providers</strong>
+                    <small className="opacity-75">Vetted local technicians with authentic customer ratings.</small>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -3,17 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
-  const { user, logout, login } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleQuickLogin = async (email, password) => {
-    try {
-      await login(email, password);
-      navigate('/');
-    } catch (err) {
-      alert('Quick login failed. Ensure Django backend is running!');
-    }
-  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-3">
@@ -75,41 +66,6 @@ export default function Navbar() {
           </ul>
 
           <div className="d-flex align-items-center gap-3">
-            {/* Quick Demo Switcher Dropdown */}
-            <div className="dropdown">
-              <button className="btn btn-outline-light btn-sm dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
-                <i className="bi bi-person-badge me-1"></i> Demo Quick-Logins
-              </button>
-              <ul className="dropdown-menu dropdown-menu-end shadow">
-                <li><h6 className="dropdown-header">Switch Demo Role</h6></li>
-                <li>
-                  <button className="dropdown-item fw-bold text-primary" onClick={() => handleQuickLogin('nandana@bookmyservice.com', 'nandana123')}>
-                    <i className="bi bi-person-heart text-primary me-2"></i> Nandana (Customer)
-                  </button>
-                </li>
-                <li>
-                  <button className="dropdown-item" onClick={() => handleQuickLogin('customer@bookmyservice.com', 'customer123')}>
-                    <i className="bi bi-person text-secondary me-2"></i> Customer (Rahul Sharma)
-                  </button>
-                </li>
-                <li>
-                  <button className="dropdown-item" onClick={() => handleQuickLogin('apex.tech@bookmyservice.com', 'provider123')}>
-                    <i className="bi bi-tools text-success me-2"></i> Provider (Apex Tech)
-                  </button>
-                </li>
-                <li>
-                  <button className="dropdown-item" onClick={() => handleQuickLogin('coolbreeze@bookmyservice.com', 'provider123')}>
-                    <i className="bi bi-snow text-info me-2"></i> Provider (CoolBreeze AC)
-                  </button>
-                </li>
-                <li><hr className="dropdown-divider" /></li>
-                <li>
-                  <button className="dropdown-item fw-semibold text-danger" onClick={() => handleQuickLogin('admin@bookmyservice.com', 'admin123')}>
-                    <i className="bi bi-shield-fill text-danger me-2"></i> Platform Administrator
-                  </button>
-                </li>
-              </ul>
-            </div>
 
             {user ? (
               <div className="d-flex align-items-center gap-2">
