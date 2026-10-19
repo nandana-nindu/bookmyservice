@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, status
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from django.db.models import Count, Q
 
@@ -80,6 +81,7 @@ class ServiceDetailView(generics.RetrieveAPIView):
 class ProviderServiceListCreateView(generics.ListCreateAPIView):
     serializer_class = ServiceSerializer
     permission_classes = [IsProvider]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
         provider = self.request.user.provider_profile
@@ -93,7 +95,50 @@ class ProviderServiceListCreateView(generics.ListCreateAPIView):
 class ProviderServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ServiceSerializer
     permission_classes = [IsProvider]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
         provider = self.request.user.provider_profile
         return Service.objects.filter(provider=provider)
+
+
+class AdminServiceListView(generics.ListAPIView):
+    """Read-only platform-wide service inventory for administrators."""
+    serializer_class = ServiceSerializer
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        queryset = Service.objects.select_related('provider', 'provider__user', 'category').all().order_by('-created_at')
+        active = self.request.query_params.get('is_active')
+        category = self.request.query_params.get('category')
+        provider = self.request.query_params.get('provider')
+        q = self.request.query_params.get('q')
+        if active in ('true', 'false'):
+            queryset = queryset.filter(is_active=(active == 'true'))
+        if category:
+            queryset = queryset.filter(category_id=category)
+        if provider:
+            queryset = queryset.filter(provider_id=provider)
+        if q:
+            queryset = queryset.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(provider__business_name__icontains=q))
+        return queryset
+
+
+class AdminServiceDetailView(generics.RetrieveUpdateAPIView):
+    """Administrator can inspect/update service details and activate/deactivate a service."""
+    serializer_class = ServiceSerializer
+    permission_classes = [IsAdmin]
+    queryset = Service.objects.select_related('provider', 'provider__user', 'category').all()
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+
+class AdminCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdmin]
+    queryset = Category.objects.all()
+
+    def perform_destroy(self, instance):
+        if instance.services.exists():
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'error': 'This category still contains services. Reassign or remove those services before deleting it.'})
+        instance.delete()

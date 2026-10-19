@@ -1,6 +1,8 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.core.exceptions import ValidationError as DjangoValidationError
+from apps.accounts.models import phone_regex
 
 from apps.accounts.models import User, CustomerProfile, ProviderProfile
 from apps.accounts.serializers import (
@@ -44,10 +46,16 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         name = request.data.get('name')
         phone = request.data.get('phone')
 
-        if name:
-            user.name = name
-        if phone:
-            user.phone = phone
+        if name is not None:
+            if not str(name).strip():
+                return Response({'name': ['Name cannot be blank.']}, status=status.HTTP_400_BAD_REQUEST)
+            user.name = str(name).strip()
+        if phone is not None:
+            try:
+                phone_regex(phone) if phone else None
+            except DjangoValidationError as exc:
+                return Response({'phone': exc.messages}, status=status.HTTP_400_BAD_REQUEST)
+            user.phone = phone or None
         user.save()
 
         # Update profile specific fields
@@ -56,6 +64,15 @@ class ProfileView(generics.RetrieveUpdateAPIView):
             p.business_name = request.data.get('business_name', p.business_name)
             p.bio = request.data.get('bio', p.bio)
             p.location = request.data.get('location', p.location)
+            if 'profile_image' in request.FILES:
+                uploaded_image = request.FILES['profile_image']
+                if uploaded_image.size > 5 * 1024 * 1024 or not uploaded_image.content_type.startswith('image/'):
+                    return Response({'profile_image': ['Upload an image no larger than 5 MB.']}, status=status.HTTP_400_BAD_REQUEST)
+                p.profile_image = uploaded_image
+            elif request.data.get('remove_profile_image') in ('true', 'True', '1'):
+                if p.profile_image:
+                    p.profile_image.delete(save=False)
+                p.profile_image = None
             p.experience_years = request.data.get('experience_years', p.experience_years)
             p.save()
         elif user.role == User.Role.CUSTOMER and hasattr(user, 'customer_profile'):

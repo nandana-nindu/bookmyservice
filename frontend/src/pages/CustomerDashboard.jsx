@@ -4,11 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 export default function CustomerDashboard() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [showProfile, setShowProfile] = useState(false);
+  const [profile, setProfile] = useState({ name: user?.name || '', phone: user?.phone || '', address: user?.customer_profile?.address || '', city: user?.customer_profile?.city || '' });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // Reschedule Modal State
   const [rescheduleBooking, setRescheduleBooking] = useState(null);
@@ -24,7 +27,21 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     fetchBookings();
+    api.get('/auth/profile/').then(({ data }) => setProfile({ name: data.name || '', phone: data.phone || '', address: data.customer_profile?.address || '', city: data.customer_profile?.city || '' })).catch(() => {});
   }, []);
+
+  const saveCustomerProfile = async (event) => {
+    event.preventDefault(); setSavingProfile(true); setErrorMsg(''); setSuccessMsg('');
+    try {
+      const response = await api.patch('/auth/profile/', profile);
+      updateUser(response.data);
+      setProfile({ name: response.data.name || '', phone: response.data.phone || '', address: response.data.customer_profile?.address || '', city: response.data.customer_profile?.city || '' });
+      setSuccessMsg('Your profile was updated successfully.'); setShowProfile(false);
+    } catch (err) {
+      const data = err.response?.data;
+      setErrorMsg(data?.detail || Object.entries(data || {}).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`).join(' ') || 'Could not update your profile.');
+    } finally { setSavingProfile(false); }
+  };
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -131,10 +148,21 @@ export default function CustomerDashboard() {
           <h2 className="fw-bold mb-1">Customer Dashboard</h2>
           <p className="text-secondary small mb-0">Welcome back, <strong>{user?.name}</strong>. Manage your service bookings.</p>
         </div>
+        <div className="d-flex flex-wrap gap-2">
+        <button className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={() => setShowProfile(v => !v)}><i className="bi bi-person-circle me-1"></i> My Profile</button>
         <Link to="/services" className="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm">
           <i className="bi bi-plus-lg me-1"></i> Book New Service
         </Link>
+        </div>
       </div>
+
+      {showProfile && (
+        <div className="card border-0 shadow-sm rounded-4 mb-4"><div className="card-body p-4"><h5 className="fw-bold mb-3">Customer Profile</h5>
+          <form onSubmit={saveCustomerProfile}><div className="row g-3">
+            {[['name','Full name'],['phone','Phone number'],['address','Address'],['city','City']].map(([field,label]) => <div className="col-md-6" key={field}><label className="form-label">{label}</label><input className="form-control" name={field} value={profile[field]} onChange={e=>setProfile(prev=>({...prev,[field]:e.target.value}))} required={field==='name'} /></div>)}
+          </div><div className="d-flex gap-2 mt-3"><button className="btn btn-primary rounded-pill px-4" disabled={savingProfile}>{savingProfile ? 'Saving…' : 'Save Profile'}</button><button type="button" className="btn btn-light rounded-pill px-4" onClick={()=>setShowProfile(false)}>Close</button></div></form>
+        </div></div>
+      )}
 
       {errorMsg && (
         <div className="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">

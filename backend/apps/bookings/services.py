@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from apps.bookings.models import Availability, Booking
 from apps.services.models import Service
+from apps.accounts.models import ProviderProfile
 
 def get_available_slots_for_provider(provider, service, target_date):
     """
@@ -85,22 +86,29 @@ def create_booking_with_lock(customer_profile, service_id, booking_date_str, sta
     Assessment Section 9: Critical Requirement - Prevent Double Booking.
     Uses pessimistic locking (select_for_update) inside an atomic transaction.
     """
-    service = Service.objects.select_related('provider').get(id=service_id, is_active=True)
-    provider = service.provider
+    try:
+        service = Service.objects.select_related('provider').get(id=service_id, is_active=True)
+    except Service.DoesNotExist:
+        raise ValidationError('Service was not found or is no longer active.')
+    # Lock the provider row, not just existing bookings. This serializes all slot
+    # allocation attempts for the same provider on databases supporting row locks.
+    provider = ProviderProfile.objects.select_for_update().get(pk=service.provider_id)
+    service.provider = provider
 
     # Parse inputs
-    if isinstance(booking_date_str, str):
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    else:
-        booking_date = booking_date_str
-
-    if isinstance(start_time_str, str):
-        parsed_time = datetime.strptime(start_time_str, '%H:%M').time()
-    else:
-        parsed_time = start_time_str
+    try:
+        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date() if isinstance(booking_date_str, str) else booking_date_str
+        parsed_time = datetime.strptime(start_time_str, '%H:%M').time() if isinstance(start_time_str, str) else start_time_str
+    except (TypeError, ValueError):
+        raise ValidationError('Invalid booking date or time. Use YYYY-MM-DD and HH:MM.')
 
     start_dt = datetime.combine(booking_date, parsed_time)
+    now_local = timezone.localtime(timezone.now()).replace(tzinfo=None)
+    if start_dt <= now_local:
+        raise ValidationError('Cannot book a time slot in the past.')
     end_dt = start_dt + timedelta(minutes=service.duration_minutes)
+    if end_dt.date() != booking_date:
+        raise ValidationError('A booking cannot extend past the end of the day.')
     end_time = end_dt.time()
 
     if booking_date < date.today():
@@ -122,13 +130,18 @@ def create_booking_with_lock(customer_profile, service_id, booking_date_str, sta
     weekday = booking_date.weekday()
     try:
         schedule = Availability.objects.get(provider=provider, day_of_week=weekday)
-        if not schedule.is_available:
-            raise ValidationError(f"The provider is not operating on this day.")
-        if parsed_time < schedule.start_time or end_time > schedule.end_time:
-            raise ValidationError(f"The requested time is outside the provider's working hours ({schedule.start_time.strftime('%H:%M')} - {schedule.end_time.strftime('%H:%M')}).")
     except Availability.DoesNotExist:
-        # Default fallback check (09:00 - 18:00)
-        pass
+        # Match the default schedule shown to customers in get_available_slots.
+        if weekday < 5:
+            schedule = Availability(provider=provider, day_of_week=weekday, start_time=time(9, 0), end_time=time(17, 0), is_available=True)
+        elif weekday == 5:
+            schedule = Availability(provider=provider, day_of_week=weekday, start_time=time(10, 0), end_time=time(14, 0), is_available=True)
+        else:
+            schedule = Availability(provider=provider, day_of_week=weekday, is_available=False)
+    if not schedule.is_available:
+        raise ValidationError('The provider is not operating on this day.')
+    if parsed_time < schedule.start_time or end_time > schedule.end_time:
+        raise ValidationError(f"The requested time is outside the provider's working hours ({schedule.start_time.strftime('%H:%M')} - {schedule.end_time.strftime('%H:%M')}).")
 
     # 3. Create the booking
     booking = Booking.objects.create(
@@ -151,6 +164,10 @@ def reschedule_booking_with_lock(booking, new_date_str, new_start_time_str):
     """
     Reschedules booking with concurrency check and 2-hour cancellation/reschedule policy enforcement.
     """
+    # Use the same lock order as new bookings (provider first, booking second)
+    # to reduce deadlock risk when reschedules race with new booking requests.
+    ProviderProfile.objects.select_for_update().get(pk=booking.provider_id)
+    booking = Booking.objects.select_for_update().select_related('provider', 'service').get(pk=booking.pk)
     can_proceed, reason = booking.can_cancel_or_reschedule()
     if not can_proceed:
         raise ValidationError(reason)
@@ -166,8 +183,25 @@ def reschedule_booking_with_lock(booking, new_date_str, new_start_time_str):
         new_start = new_start_time_str
 
     start_dt = datetime.combine(new_date, new_start)
+    now_local = timezone.localtime(timezone.now()).replace(tzinfo=None)
+    if start_dt <= now_local:
+        raise ValidationError('Cannot reschedule to a past date or time.')
     end_dt = start_dt + timedelta(minutes=booking.service.duration_minutes)
+    if end_dt.date() != new_date:
+        raise ValidationError('A booking cannot extend past the end of the day.')
     new_end = end_dt.time()
+    weekday = new_date.weekday()
+    try:
+        schedule = Availability.objects.get(provider=booking.provider, day_of_week=weekday)
+    except Availability.DoesNotExist:
+        if weekday < 5:
+            schedule = Availability(provider=booking.provider, day_of_week=weekday, start_time=time(9, 0), end_time=time(17, 0), is_available=True)
+        elif weekday == 5:
+            schedule = Availability(provider=booking.provider, day_of_week=weekday, start_time=time(10, 0), end_time=time(14, 0), is_available=True)
+        else:
+            schedule = Availability(provider=booking.provider, day_of_week=weekday, is_available=False)
+    if not schedule.is_available or new_start < schedule.start_time or new_end > schedule.end_time:
+        raise ValidationError('The selected time is outside the provider working hours or the provider is unavailable.')
 
     # Lock and check conflicts excluding this current booking
     overlapping = Booking.objects.select_for_update().filter(

@@ -166,3 +166,30 @@ class DoubleBookingPreventionTests(TestCase):
         booking.transition_to(Booking.Status.IN_PROGRESS)
         booking.transition_to(Booking.Status.COMPLETED)
         self.assertEqual(booking.status, Booking.Status.COMPLETED)
+
+
+class BookingEdgeCaseTests(DoubleBookingPreventionTests):
+    def test_booking_outside_working_hours_is_rejected(self):
+        with self.assertRaises(ValidationError):
+            create_booking_with_lock(self.customer_a, self.service.id, self.test_date.strftime('%Y-%m-%d'), '17:00')
+
+    def test_booking_for_past_date_is_rejected(self):
+        with self.assertRaises(ValidationError):
+            create_booking_with_lock(self.customer_a, self.service.id, (date.today() - timedelta(days=1)).strftime('%Y-%m-%d'), '10:00')
+
+    def test_booking_rejected_when_provider_unavailable(self):
+        Availability.objects.filter(provider=self.provider_profile, day_of_week=self.test_date.weekday()).update(is_available=False)
+        with self.assertRaises(ValidationError):
+            create_booking_with_lock(self.customer_a, self.service.id, self.test_date.strftime('%Y-%m-%d'), '10:00')
+
+    def test_cancellation_exactly_two_hours_before_is_allowed(self):
+        # The exact boundary is allowed by the assessment's 'up to 2 hours before' rule.
+        from unittest.mock import patch
+        future = timezone_now = __import__('django.utils.timezone', fromlist=['now']).now()
+        scheduled = future + timedelta(hours=2)
+        booking = Booking.objects.create(customer=self.customer_a, provider=self.provider_profile, service=self.service,
+            booking_date=scheduled.date(), start_time=scheduled.time().replace(tzinfo=None),
+            end_time=(scheduled + timedelta(hours=1)).time().replace(tzinfo=None), total_price=500, status=Booking.Status.CONFIRMED)
+        with patch('django.utils.timezone.now', return_value=future):
+            allowed, _ = booking.can_cancel_or_reschedule()
+        self.assertTrue(allowed)

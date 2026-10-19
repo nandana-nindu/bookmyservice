@@ -74,6 +74,10 @@ class Booking(models.Model):
             models.Index(fields=['provider', 'booking_date', 'status']),
             models.Index(fields=['customer', 'status']),
         ]
+        constraints = [
+            models.CheckConstraint(condition=models.Q(end_time__gt=models.F('start_time')), name='booking_end_after_start'),
+            models.CheckConstraint(condition=models.Q(total_price__gte=0), name='booking_price_nonnegative'),
+        ]
 
     def __str__(self):
         return f"Booking #{self.id} - {self.service.name} for {self.customer.user.name} ({self.status})"
@@ -87,10 +91,8 @@ class Booking(models.Model):
             return False, "Only PENDING or CONFIRMED bookings can be cancelled or rescheduled."
         
         scheduled_dt = self.get_scheduled_datetime()
-        # If naive, assume current system local time
-        now_dt = datetime.now()
-        if timezone.is_aware(scheduled_dt):
-            now_dt = timezone.now()
+        # booking_date/start_time are local wall-clock values for the configured service timezone.
+        now_dt = timezone.localtime(timezone.now()).replace(tzinfo=None)
 
         if scheduled_dt - now_dt < timedelta(hours=2):
             return False, "Cancellations or rescheduling must be done at least 2 hours before scheduled time."

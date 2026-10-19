@@ -79,7 +79,7 @@ export default function ServicesPage() {
       <div className="row g-4">
         {/* Filters Sidebar */}
         <div className="col-lg-3">
-          <div className="bg-white p-4 rounded-4 border shadow-sm sticky-top" style={{ top: '90px' }}>
+          <div className="bg-white p-4 rounded-4 border shadow-sm services-filter-panel">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold mb-0">
                 <i className="bi bi-funnel-fill text-primary me-2"></i> Filters
@@ -219,6 +219,14 @@ export default function ServicesPage() {
                       </span>
                     </div>
 
+                    {(service.image || service.image_url) && (
+                      <img
+                        src={service.image || service.image_url}
+                        alt={service.name}
+                        className="service-listing-image mb-3"
+                        loading="lazy"
+                      />
+                    )}
                     <h5 className="fw-bold mb-2">{service.name}</h5>
                     <p className="text-muted small mb-3 flex-grow-1" style={{ minHeight: '40px' }}>
                       {service.description}
@@ -228,7 +236,9 @@ export default function ServicesPage() {
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
                           <div className="fw-semibold small text-dark">
-                            <i className="bi bi-person-badge-fill text-primary me-1"></i> {service.provider_details?.business_name}
+                            {service.provider_details?.profile_image ? (
+                              <img src={service.provider_details.profile_image} alt={`${service.provider_details.business_name || 'Provider'} profile`} className="rounded-circle me-2" style={{ width: 28, height: 28, objectFit: 'cover' }} />
+                            ) : <i className="bi bi-person-badge-fill text-primary me-1"></i>} {service.provider_details?.business_name}
                           </div>
                           <div className="text-muted" style={{ fontSize: '0.75rem' }}>
                             <i className="bi bi-geo-alt-fill text-danger me-1"></i> {service.location}

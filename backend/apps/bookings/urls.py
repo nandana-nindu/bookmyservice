@@ -3,7 +3,7 @@ from apps.bookings.views import (
     AvailableSlotsView, CreateBookingView, CustomerBookingsView,
     ProviderBookingsView, UpdateBookingStatusView, CancelBookingView,
     RescheduleBookingView, SubmitReviewView, ProviderAvailabilityView,
-    AdminDashboardStatsView
+    AdminDashboardStatsView, AdminBookingListView, AdminBookingUpdateView
 )
 
 urlpatterns = [
@@ -17,4 +17,6 @@ urlpatterns = [
     path('<int:pk>/review/', SubmitReviewView.as_view(), name='submit_review'),
     path('availability/', ProviderAvailabilityView.as_view(), name='provider_availability'),
     path('admin/stats/', AdminDashboardStatsView.as_view(), name='admin_stats'),
+    path('admin/', AdminBookingListView.as_view(), name='admin_bookings'),
+    path('admin/<int:pk>/', AdminBookingUpdateView.as_view(), name='admin_booking_update'),
 ]

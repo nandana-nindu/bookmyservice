@@ -71,6 +71,7 @@ class ProviderProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='provider_profile')
     business_name = models.CharField(max_length=255, blank=True, default='')
     bio = models.TextField(blank=True, default='')
+    profile_image = models.ImageField(upload_to='provider_profiles/', blank=True, null=True)
     location = models.CharField(max_length=150, default='Kochi')
     experience_years = models.PositiveIntegerField(default=1)
     rating_cache = models.DecimalField(max_digits=3, decimal_places=2, default=5.00)

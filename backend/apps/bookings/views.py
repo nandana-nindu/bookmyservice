@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.exceptions import ValidationError
 from django.db.models import Sum, Count, Q
+from django.db import IntegrityError
 from datetime import datetime
 
 from apps.accounts.models import User, CustomerProfile, ProviderProfile
@@ -68,7 +69,9 @@ class CreateBookingView(APIView):
             }, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({'error': str(e.message if hasattr(e, 'message') else e)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
+        except IntegrityError:
+            return Response({'error': 'That time slot conflicts with another booking. Please choose another slot.'}, status=status.HTTP_409_CONFLICT)
+        except Exception:
             return Response({'error': 'An unexpected error occurred while booking.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -139,6 +142,8 @@ class CancelBookingView(APIView):
         except Booking.DoesNotExist:
             return Response({'error': 'Booking not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+        if Booking.Status.CANCELLED not in Booking.VALID_TRANSITIONS.get(booking.status, []):
+            return Response({'error': f'Invalid transition from {booking.status} to CANCELLED.'}, status=status.HTTP_400_BAD_REQUEST)
         booking.status = Booking.Status.CANCELLED
         booking.cancellation_reason = reason
         booking.save(update_fields=['status', 'cancellation_reason', 'updated_at'])
@@ -172,6 +177,8 @@ class RescheduleBookingView(APIView):
             })
         except ValidationError as e:
             return Response({'error': str(e.message if hasattr(e, 'message') else e)}, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            return Response({'error': 'That time slot conflicts with another booking. Your original booking has been kept.'}, status=status.HTTP_409_CONFLICT)
 
 
 class SubmitReviewView(APIView):
@@ -278,3 +285,46 @@ class AdminDashboardStatsView(APIView):
             },
             'recent_bookings': BookingSerializer(recent_bookings, many=True).data
         })
+
+
+class AdminBookingListView(generics.ListAPIView):
+    """Platform-wide booking search for administrators."""
+    permission_classes = [IsAdmin]
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        queryset = Booking.objects.select_related('customer__user', 'provider__user', 'service', 'provider').all().order_by('-created_at')
+        status_value = self.request.query_params.get('status')
+        provider = self.request.query_params.get('provider')
+        customer = self.request.query_params.get('customer')
+        date_value = self.request.query_params.get('date')
+        q = self.request.query_params.get('q')
+        if status_value:
+            queryset = queryset.filter(status=status_value.upper())
+        if provider:
+            queryset = queryset.filter(provider_id=provider)
+        if customer:
+            queryset = queryset.filter(customer_id=customer)
+        if date_value:
+            queryset = queryset.filter(booking_date=date_value)
+        if q:
+            queryset = queryset.filter(Q(service__name__icontains=q) | Q(provider__business_name__icontains=q) | Q(customer__user__name__icontains=q) | Q(customer__user__email__icontains=q))
+        return queryset
+
+
+class AdminBookingUpdateView(APIView):
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, pk):
+        try:
+            booking = Booking.objects.get(pk=pk)
+        except Booking.DoesNotExist:
+            return Response({'error': 'Booking not found.'}, status=status.HTTP_404_NOT_FOUND)
+        new_status = str(request.data.get('status', '')).upper()
+        if new_status not in Booking.Status.values:
+            return Response({'error': 'A valid booking status is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            booking.transition_to(new_status, actor_role='ADMIN')
+        except ValidationError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Booking updated.', 'booking': BookingSerializer(booking).data})

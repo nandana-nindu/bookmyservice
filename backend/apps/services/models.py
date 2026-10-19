@@ -31,6 +31,7 @@ class Service(models.Model):
     duration_minutes = models.PositiveIntegerField(choices=DURATION_CHOICES, default=60)
     location = models.CharField(max_length=150, blank=True, default='')
     image_url = models.URLField(max_length=500, blank=True, default='')
+    image = models.ImageField(upload_to='service_images/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

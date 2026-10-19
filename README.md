@@ -195,3 +195,11 @@ OK
 | `POST` | `/api/bookings/availability/` | Provider | Bulk update weekly availability |
 | `GET` | `/api/bookings/admin/stats/` | Admin | Real-time platform metrics & revenue |
 | `POST` | `/api/auth/admin/users/<id>/toggle-status/` | Admin | Activate or deactivate account |
+
+## Environment configuration and production safety
+
+Backend settings are environment-driven. For local development, copy `backend/.env.example` to `backend/.env` and keep `DJANGO_DEBUG=True` only on your development machine. For deployment, set `DJANGO_DEBUG=False`, a long random `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` to the deployed API hostnames, and `DJANGO_CORS_ALLOWED_ORIGINS` to the exact frontend origins. Set `DATABASE_URL` to PostgreSQL for production booking concurrency guarantees. Never commit `backend/.env` or real credentials.
+
+For the PostgreSQL overlap constraint, apply migrations after installing the `btree_gist` extension permission (migration 0003 creates the extension if the database user is permitted). SQLite is useful for local development but does not support row-level `SELECT FOR UPDATE`; use PostgreSQL for the concurrent booking test and production.
+
+Service images are uploaded through the provider's **My Services** form and are stored under `MEDIA_ROOT/service_images/`. Provider profile images and customer profile editing are available from their respective dashboards.

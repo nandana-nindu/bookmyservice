@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import User, CustomerProfile, ProviderProfile
@@ -11,10 +12,17 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
 
 
 class ProviderProfileSerializer(serializers.ModelSerializer):
+    def validate_profile_image(self, image):
+        if image and image.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError('Profile image must be 5 MB or smaller.')
+        if image and not getattr(image, 'content_type', '').startswith('image/'):
+            raise serializers.ValidationError('Upload a valid image file.')
+        return image
+
     class Meta:
         model = ProviderProfile
         fields = [
-            'id', 'business_name', 'bio', 'location', 
+            'id', 'business_name', 'bio', 'profile_image', 'location', 
             'experience_years', 'rating_cache', 'total_reviews', 'is_verified'
         ]
         read_only_fields = ['rating_cache', 'total_reviews', 'is_verified']
@@ -31,7 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
+    password = serializers.CharField(write_only=True, min_length=8, validators=[validate_password])
     business_name = serializers.CharField(required=False, allow_blank=True)
     location = serializers.CharField(required=False, allow_blank=True)
     experience_years = serializers.IntegerField(required=False, default=1)
@@ -39,6 +47,12 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'password', 'name', 'phone', 'role', 'business_name', 'location', 'experience_years']
+
+    def validate_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Name cannot be blank.')
+        return value
 
     def validate_email(self, value):
         if User.objects.filter(email__iexact=value).exists():

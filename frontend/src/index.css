@@ -163,3 +163,9 @@ body {
   justify-content: center;
   font-size: 1.5rem;
 }
+
+
+/* Browse-services sidebar must remain in the content flow below the navbar. */
+.services-filter-panel { position: relative; z-index: 1; }
+.navbar.sticky-top { z-index: 1030; }
+.service-listing-image { width: 100%; height: 180px; object-fit: cover; border-radius: 0.75rem; background: #f1f5f9; }
