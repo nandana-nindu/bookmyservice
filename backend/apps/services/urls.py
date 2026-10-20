@@ -1,4 +1,5 @@
 from django.urls import path
+# pyrefly: ignore [missing-import]
 from apps.services.views import (
     CategoryListView, ServiceListView, ServiceDetailView,
     ProviderServiceListCreateView, ProviderServiceDetailView, AdminServiceListView, AdminServiceDetailView, AdminCategoryDetailView

@@ -1,8 +1,11 @@
 from datetime import time
 from django.core.management.base import BaseCommand
 from django.db import transaction
+# pyrefly: ignore [missing-import]
 from apps.accounts.models import User, CustomerProfile, ProviderProfile
+# pyrefly: ignore [missing-import]
 from apps.services.models import Category, Service
+# pyrefly: ignore [missing-import]
 from apps.bookings.models import Availability
 
 
