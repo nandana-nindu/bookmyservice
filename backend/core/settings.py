@@ -144,11 +144,14 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = os.getenv('DJANGO_CORS_ALLOW_ALL', 'False').lower() in ('1', 'true', 'yes', 'on')
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv(
     'DJANGO_CORS_ALLOWED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173'
 ).split(',') if origin.strip()]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https:\/\/.*\.vercel\.app$",
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Additional production hardening. These are enabled only when DEBUG is disabled.
