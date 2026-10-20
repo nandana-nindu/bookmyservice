@@ -14,58 +14,47 @@ const CATEGORY_THEMES = {
   'garden-moving': { icon: 'bi-box-seam', bg: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)', color: '#ca8a04' },
 };
 
-const DEFAULT_THEME = { icon: 'bi-briefcase', bg: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', color: '#475569' };
+const FALLBACK_CATEGORY_IMAGES = {
+  'appliance-repair': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80',
+  'ac-cooling': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=80',
+  'home-cleaning-plus': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&auto=format&fit=crop&q=80',
+  'plumbing-care': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fit=crop&q=80',
+  'electrical-care': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&auto=format&fit=crop&q=80',
+  'car-care': 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&auto=format&fit=crop&q=80',
+  'beauty-wellness': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80',
+  'photography-events': 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=80',
+  'tech-support': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&auto=format&fit=crop&q=80',
+  'garden-moving': 'https://images.unsplash.com/photo-1558904541-efa8c4a08931?w=800&auto=format&fit=crop&q=80',
+};
+
+const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&auto=format&fit=crop&q=80';
 
 export default function ServiceImage({ src, alt, categorySlug, className = 'service-listing-image mb-3' }) {
   const [hasError, setHasError] = useState(false);
 
-  // If URL points to /media/demo_services/ which does not exist as physical files on disk, or if it errors out
+  // Determine the effective image source:
+  // If no src, or if it points to non-existent local /media/demo_services/, or if image failed to load,
+  // use the category-specific high-resolution Unsplash photo.
   const isBrokenDemoMedia = !src || (typeof src === 'string' && src.startsWith('/media/demo_services/'));
-
-  const theme = CATEGORY_THEMES[categorySlug] || DEFAULT_THEME;
-
+  
+  let targetSrc = src;
   if (isBrokenDemoMedia || hasError) {
-    return (
-      <div
-        className={`${className} d-flex flex-column align-items-center justify-content-center text-center p-3 border-0`}
-        style={{
-          background: theme.bg,
-          minHeight: '160px',
-          maxHeight: '180px',
-        }}
-      >
-        <div
-          className="rounded-circle d-flex align-items-center justify-content-center mb-2 shadow-sm"
-          style={{
-            width: 58,
-            height: 58,
-            backgroundColor: '#ffffff',
-            color: theme.color,
-            fontSize: '1.75rem',
-          }}
-        >
-          <i className={`bi ${theme.icon}`}></i>
-        </div>
-        <span className="fw-semibold text-secondary small text-truncate" style={{ maxWidth: '90%' }}>
-          {alt}
-        </span>
-      </div>
-    );
-  }
-
-  // Handle relative media path by prefixing VITE_API_URL if needed
-  let fullSrc = src;
-  if (typeof src === 'string' && src.startsWith('/') && import.meta.env.VITE_API_URL) {
-    fullSrc = `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}${src}`;
+    targetSrc = FALLBACK_CATEGORY_IMAGES[categorySlug] || DEFAULT_FALLBACK_IMAGE;
+  } else if (typeof targetSrc === 'string' && targetSrc.startsWith('/') && import.meta.env.VITE_API_URL) {
+    targetSrc = `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}${targetSrc}`;
   }
 
   return (
     <img
-      src={fullSrc}
+      src={targetSrc}
       alt={alt}
       className={className}
       loading="lazy"
-      onError={() => setHasError(true)}
+      onError={() => {
+        if (!hasError) {
+          setHasError(true);
+        }
+      }}
     />
   );
 }

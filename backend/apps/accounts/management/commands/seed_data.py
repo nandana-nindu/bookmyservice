@@ -55,55 +55,58 @@ class Command(BaseCommand):
                 obj, _ = Category.objects.update_or_create(slug=item["slug"], defaults=item)
                 categories[item["slug"]] = obj
 
-            # Stable local image paths are served from Django MEDIA_URL, so demo cards
-            # do not depend on external image hosting or internet access.
+            # High-quality Unsplash image URLs for each service & provider so cards look great without local disk storage
             providers = [
                 {
                     "email": "provider@gmail.com", "password": "provider123", "name": "Ananya Menon",
                     "phone": "+919810000101", "business": "Urban Spark Home Care", "location": "Kochi - Panampilly Nagar",
                     "bio": "A friendly home-care team focused on thoughtful cleaning, reliable visits and tidy spaces.",
-                    "experience": 6, "rating": "4.90", "image": "demo_providers/urban_spark.png",
+                    "experience": 6, "rating": "4.90",
+                    "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80",
                     "services": [
-                        ("Signature Home Deep Clean", "home-cleaning-plus", 1899, 180, "Room-by-room deep clean for floors, surfaces, kitchen and bathrooms.", "demo_services/home_clean.png"),
-                        ("Move-in Refresh Clean", "home-cleaning-plus", 1299, 120, "A detailed clean to help make a new home feel ready.", "demo_services/home_clean.png"),
-                        ("Garden Tidy-up Visit", "garden-moving", 799, 60, "Light pruning, leaf clearing and a neat-up of small home gardens.", "demo_services/garden.png"),
-                        ("Family Event Photography", "photography-events", 2499, 120, "A relaxed photography session for family gatherings and small celebrations.", "demo_services/photography.png"),
+                        ("Signature Home Deep Clean", "home-cleaning-plus", 1899, 180, "Room-by-room deep clean for floors, surfaces, kitchen and bathrooms.", "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&auto=format&fit=crop&q=80"),
+                        ("Move-in Refresh Clean", "home-cleaning-plus", 1299, 120, "A detailed clean to help make a new home feel ready.", "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=800&auto=format&fit=crop&q=80"),
+                        ("Garden Tidy-up Visit", "garden-moving", 799, 60, "Light pruning, leaf clearing and a neat-up of small home gardens.", "https://images.unsplash.com/photo-1558904541-efa8c4a08931?w=800&auto=format&fit=crop&q=80"),
+                        ("Family Event Photography", "photography-events", 2499, 120, "A relaxed photography session for family gatherings and small celebrations.", "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=80"),
                     ],
                 },
                 {
                     "email": "coolcare@gmail.com", "password": "provider123", "name": "Faisal Rahman",
                     "phone": "+919810000102", "business": "CoolCare Climate Services", "location": "Kochi - Kakkanad",
                     "bio": "Residential cooling specialists offering careful AC cleaning, installation and maintenance.",
-                    "experience": 8, "rating": "4.80", "image": "demo_providers/coolcare.png",
+                    "experience": 8, "rating": "4.80",
+                    "image": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80",
                     "services": [
-                        ("AC Deep Clean & Filter Care", "ac-cooling", 749, 60, "Indoor unit cleaning, filter care and a basic cooling performance check.", "demo_services/ac_clean.png"),
-                        ("AC Installation Visit", "ac-cooling", 1499, 120, "Professional installation assessment and standard unit mounting support.", "demo_services/ac_clean.png"),
-                        ("Refrigerator Repair Assessment", "appliance-repair", 499, 60, "Troubleshooting visit for cooling, noise and common refrigerator issues.", "demo_services/appliance_fix.png"),
-                        ("Car Interior & Exterior Detail", "car-care", 1799, 180, "A careful interior and exterior refresh for everyday vehicles.", "demo_services/car_detail.png"),
+                        ("AC Deep Clean & Filter Care", "ac-cooling", 749, 60, "Indoor unit cleaning, filter care and a basic cooling performance check.", "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=80"),
+                        ("AC Installation Visit", "ac-cooling", 1499, 120, "Professional installation assessment and standard unit mounting support.", "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80"),
+                        ("Refrigerator Repair Assessment", "appliance-repair", 499, 60, "Troubleshooting visit for cooling, noise and common refrigerator issues.", "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=800&auto=format&fit=crop&q=80"),
+                        ("Car Interior & Exterior Detail", "car-care", 1799, 180, "A careful interior and exterior refresh for everyday vehicles.", "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&auto=format&fit=crop&q=80"),
                     ],
                 },
                 {
                     "email": "handyman@gmail.com", "password": "provider123", "name": "Sanjay Varma",
                     "phone": "+919810000103", "business": "FixIt Home Solutions", "location": "Kochi - Palarivattom",
                     "bio": "Experienced home technician for plumbing, electrical checks and practical repairs.",
-                    "experience": 9, "rating": "4.70", "image": "demo_providers/fixit_home.png",
+                    "experience": 9, "rating": "4.70",
+                    "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
                     "services": [
-                        ("Tap & Pipe Leak Repair", "plumbing-care", 399, 60, "Inspection and repair of common tap, connector and visible pipe leaks.", "demo_services/plumbing.png"),
-                        ("Electrical Safety Check", "electrical-care", 599, 60, "A home visit to inspect common fixtures, switches and visible electrical concerns.", "demo_services/electrical.png"),
-                        ("Washer Service Visit", "appliance-repair", 549, 60, "Initial troubleshooting for drainage, vibration and common washer issues.", "demo_services/appliance_fix.png"),
-                        ("Home Moving Assistance", "garden-moving", 999, 120, "Practical help packing, carrying and organizing household items for a local move.", "demo_services/moving.png"),
+                        ("Tap & Pipe Leak Repair", "plumbing-care", 399, 60, "Inspection and repair of common tap, connector and visible pipe leaks.", "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fit=crop&q=80"),
+                        ("Electrical Safety Check", "electrical-care", 599, 60, "A home visit to inspect common fixtures, switches and visible electrical concerns.", "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&auto=format&fit=crop&q=80"),
+                        ("Washer Service Visit", "appliance-repair", 549, 60, "Initial troubleshooting for drainage, vibration and common washer issues.", "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=800&auto=format&fit=crop&q=80"),
+                        ("Home Moving Assistance", "garden-moving", 999, 120, "Practical help packing, carrying and organizing household items for a local move.", "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&auto=format&fit=crop&q=80"),
                     ],
                 },
                 {
                     "email": "techsupport@gmail.com", "password": "provider123", "name": "Diya Thomas",
                     "phone": "+919810000104", "business": "PixelCraft Tech Assist", "location": "Kochi - Edappally",
                     "bio": "Patient tech support for laptops, home Wi-Fi and everyday connected devices.",
-                    "experience": 5, "rating": "4.85", "image": "demo_providers/pixelcraft.png",
+                    "experience": 5, "rating": "4.85",
+                    "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&auto=format&fit=crop&q=80",
                     "services": [
-                        ("Laptop Tune-up & Health Check", "tech-support", 699, 60, "Performance check, cleanup guidance, updates and device health review.", "demo_services/laptop_check.png"),
-                        ("Home Wi-Fi Setup", "tech-support", 599, 60, "Router placement, Wi-Fi setup and connectivity troubleshooting.", "demo_services/wifi_setup.png"),
-                        ("Phone Screen Repair Assessment", "appliance-repair", 399, 30, "Initial inspection for screen, charging and common phone hardware issues.", "demo_services/phone_repair.png"),
-                        ("At-home Grooming Appointment", "beauty-wellness", 899, 60, "A convenient personal grooming appointment in the comfort of your home.", "demo_services/beauty.png"),
+                        ("Laptop Tune-up & Health Check", "tech-support", 699, 60, "Performance check, cleanup guidance, updates and device health review.", "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&auto=format&fit=crop&q=80"),
+                        ("Home Wi-Fi Setup", "tech-support", 599, 60, "Router placement, Wi-Fi setup and connectivity troubleshooting.", "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&auto=format&fit=crop&q=80"),
+                        ("Phone Screen Repair Assessment", "appliance-repair", 399, 30, "Initial inspection for screen, charging and common phone hardware issues.", "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&auto=format&fit=crop&q=80"),
+                        ("At-home Grooming Appointment", "beauty-wellness", 899, 60, "A convenient personal grooming appointment in the comfort of your home.", "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80"),
                     ],
                 },
             ]
@@ -133,12 +136,12 @@ class Command(BaseCommand):
                     else:
                         defaults = {"start_time": time(9, 0), "end_time": time(17, 0), "is_available": False}
                     Availability.objects.update_or_create(provider=profile, day_of_week=day, defaults=defaults)
-                for name, category_slug, price, duration, desc, image_path in p["services"]:
+                for name, category_slug, price, duration, desc, img_url in p["services"]:
                     Service.objects.update_or_create(
                         provider=profile, name=name,
                         defaults={"category": categories[category_slug], "price": price,
                                   "duration_minutes": duration, "description": desc,
-                                  "location": p["location"], "image_url": "/media/" + image_path,
+                                  "location": p["location"], "image_url": img_url,
                                   "is_active": True}
                     )
 
