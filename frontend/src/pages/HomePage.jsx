@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import BookingModal from '../components/BookingModal';
 import { useAuth } from '../context/AuthContext';
+import ServiceImage from '../components/ServiceImage';
+import ProviderAvatar from '../components/ProviderAvatar';
 
 export default function HomePage() {
   const [categories, setCategories] = useState([]);
@@ -164,7 +166,11 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  {(service.image || service.image_url) && <img src={service.image || service.image_url} alt={service.name} className="service-listing-image mb-3" loading="lazy" />}
+                  <ServiceImage
+                    src={service.image || service.image_url}
+                    alt={service.name}
+                    categorySlug={service.category_slug}
+                  />
                   <h5 className="fw-bold mb-2">{service.name}</h5>
                   <p className="text-muted small mb-3 flex-grow-1" style={{ minHeight: '40px' }}>
                     {service.description.length > 85 ? service.description.slice(0, 85) + '...' : service.description}
@@ -174,9 +180,11 @@ export default function HomePage() {
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <div>
                         <div className="fw-semibold small text-dark d-flex align-items-center">
-                          {service.provider_details?.profile_image ? (
-                            <img src={service.provider_details.profile_image} alt={`${service.provider_details.business_name || 'Provider'} profile`} className="rounded-circle me-2" style={{ width: 28, height: 28, objectFit: 'cover' }} />
-                          ) : <i className="bi bi-person-badge-fill text-primary me-2"></i>}
+                          <ProviderAvatar
+                            src={service.provider_details?.profile_image}
+                            name={service.provider_details?.business_name}
+                            size={28}
+                          />
                           {service.provider_details?.business_name}
                         </div>
                         <div className="text-muted" style={{ fontSize: '0.75rem' }}>

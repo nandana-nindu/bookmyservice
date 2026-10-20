@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api';
 import BookingModal from '../components/BookingModal';
+import ServiceImage from '../components/ServiceImage';
+import ProviderAvatar from '../components/ProviderAvatar';
 
 export default function ServicesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -219,14 +221,11 @@ export default function ServicesPage() {
                       </span>
                     </div>
 
-                    {(service.image || service.image_url) && (
-                      <img
-                        src={service.image || service.image_url}
-                        alt={service.name}
-                        className="service-listing-image mb-3"
-                        loading="lazy"
-                      />
-                    )}
+                    <ServiceImage
+                      src={service.image || service.image_url}
+                      alt={service.name}
+                      categorySlug={service.category_slug}
+                    />
                     <h5 className="fw-bold mb-2">{service.name}</h5>
                     <p className="text-muted small mb-3 flex-grow-1" style={{ minHeight: '40px' }}>
                       {service.description}
@@ -235,10 +234,13 @@ export default function ServicesPage() {
                     <div className="p-3 bg-light rounded-3 mb-3">
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <div className="fw-semibold small text-dark">
-                            {service.provider_details?.profile_image ? (
-                              <img src={service.provider_details.profile_image} alt={`${service.provider_details.business_name || 'Provider'} profile`} className="rounded-circle me-2" style={{ width: 28, height: 28, objectFit: 'cover' }} />
-                            ) : <i className="bi bi-person-badge-fill text-primary me-1"></i>} {service.provider_details?.business_name}
+                          <div className="fw-semibold small text-dark d-flex align-items-center">
+                            <ProviderAvatar
+                              src={service.provider_details?.profile_image}
+                              name={service.provider_details?.business_name}
+                              size={28}
+                            />
+                            {service.provider_details?.business_name}
                           </div>
                           <div className="text-muted" style={{ fontSize: '0.75rem' }}>
                             <i className="bi bi-geo-alt-fill text-danger me-1"></i> {service.location}
