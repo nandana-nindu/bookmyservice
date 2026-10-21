@@ -11,6 +11,7 @@ from apps.services.models import Service
 from apps.bookings.models import Availability, Booking, Review
 from apps.bookings.serializers import AvailabilitySerializer, BookingSerializer, ReviewSerializer
 from apps.bookings.services import get_available_slots_for_provider, create_booking_with_lock, reschedule_booking_with_lock
+from apps.bookings.notifications import send_booking_notification
 from apps.accounts.permissions import IsCustomer, IsProvider, IsAdmin
 
 class AvailableSlotsView(APIView):
@@ -63,6 +64,7 @@ class CreateBookingView(APIView):
                 start_time_str=start_time,
                 notes=notes
             )
+            send_booking_notification(booking, event_type='created')
             return Response({
                 'message': 'Booking requested successfully!',
                 'booking': BookingSerializer(booking).data
@@ -114,6 +116,7 @@ class UpdateBookingStatusView(APIView):
 
         try:
             booking.transition_to(new_status)
+            send_booking_notification(booking, event_type='status_changed')
             return Response({
                 'message': f"Booking status updated to {new_status}.",
                 'booking': BookingSerializer(booking).data
@@ -148,6 +151,8 @@ class CancelBookingView(APIView):
         booking.cancellation_reason = reason
         booking.save(update_fields=['status', 'cancellation_reason', 'updated_at'])
 
+        send_booking_notification(booking, event_type='cancelled', extra_context={'reason': reason})
+
         return Response({
             'message': 'Booking cancelled successfully. The time slot is now available again.',
             'booking': BookingSerializer(booking).data
@@ -171,6 +176,7 @@ class RescheduleBookingView(APIView):
 
         try:
             rescheduled = reschedule_booking_with_lock(booking, new_date, new_time)
+            send_booking_notification(rescheduled, event_type='rescheduled')
             return Response({
                 'message': 'Booking rescheduled successfully!',
                 'booking': BookingSerializer(rescheduled).data
