@@ -27,6 +27,7 @@ yarn-error.log*
 # Local wrappers
 git.cmd
 
+.vs/
 .vscode/
 .idea/
 .DS_Store
