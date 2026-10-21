@@ -110,22 +110,6 @@ State transitions follow a strictly defined lifecycle. Out-of-order transitions 
 
 ---
 
-## Demonstration Credentials
-
-Pre-seeded accounts are provided for review and testing:
-
-| Role | Email Address | Password | Profile Description |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@gmail.com` | `admin123` | Platform oversight and user governance |
-| **Provider** | `provider@gmail.com` | `provider123` | Urban Spark Home Care (Cleaning and Photography) |
-| **Provider** | `coolcare@gmail.com` | `provider123` | CoolCare Climate Services (AC and Appliance Repair) |
-| **Provider** | `handyman@gmail.com` | `provider123` | FixIt Home Solutions (Plumbing and Electrical) |
-| **Provider** | `techsupport@gmail.com` | `provider123` | PixelCraft Tech Assist (Technical Support) |
-| **Customer** | `nandana@gmail.com` | `nandana123` | Nandana Menon (Kochi) |
-| **Customer** | `rahul@gmail.com` | `rahul123` | Rahul Sharma (Kochi) |
-
----
-
 ## Local Development Setup
 
 ### System Prerequisites
